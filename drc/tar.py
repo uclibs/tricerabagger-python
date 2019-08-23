@@ -1,7 +1,7 @@
 import tarfile
-from datetime import date
 from shutil import rmtree
 from os.path import basename
+import logging
 
 
 class Tar:
@@ -13,6 +13,8 @@ class Tar:
         self.basename = self.tarfile_name.split(".tar")[0]
 
     def tar(self):
+
+        logging.info(f"Adding {self.target_directory} to {self.tarfile_name}")
         with tarfile.open(self.tarfile_name, "w") as tar:
             tar.add(self.target_directory, arcname=basename(self.basename))
 

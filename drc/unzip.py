@@ -1,6 +1,7 @@
 from glob import glob
 from os import chdir, getcwd, remove
 import zipfile
+import logging
 
 
 class Unzip:
@@ -16,6 +17,7 @@ class Unzip:
         zip_files = [file for file in glob("*.zip")]
         for zip_file in zip_files:
             with zipfile.ZipFile(zip_file, "r") as zip_reference:
+                logging.info(f"Unzipping {zip_file}")
                 directory = zip_file.split(".zip")[0]
                 zip_reference.extractall(directory)
             remove(zip_file)

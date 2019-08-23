@@ -1,4 +1,5 @@
 import subprocess
+import logging
 
 
 class Push:
@@ -14,6 +15,7 @@ class Push:
             self.profile = "aptrust-test"
 
     def push(self):
+        logging.info(f"Sending {self.bag_name} to {self.bucket} with {self.profile}")
         subprocess.run(
             ["aws", "s3", "cp", "--profile", self.profile, self.bag_name, self.bucket]
         )

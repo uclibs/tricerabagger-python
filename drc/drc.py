@@ -1,37 +1,47 @@
 from drc import unzip, bag, tar, push
 from datetime import date
-from shutil import rmtree
+from os.path import dirname
+from os import chdir, remove
+from time import time
+import logging
 
 
 class Drc:
     """
 
-    Accepts a DSpace 1.8 AIP export identifier
+    Accepts a DSpace 1.8 AIP export directory path
     
     * unzips the content
     * bags the content
     * tars the content
     * pushes it to AP Trust
 
-    The identifier *must* be in the same directory as the script running this class
-
     """
 
-    def __init__(self, identifier, clean=False, production=False):
-        self.identifier = identifier
+    def __init__(self, path, clean=False, production=False, push=True):
+        today = str(date.today())
+        timestamp = int(time())
+
+        self.working_directory = dirname(path.rstrip("/"))
+        self.identifier = path.rstrip("/").split("/")[-1]
         self.clean = clean
         self.production = production
-        today = str(date.today())
-        self.tarfile_name = f"cin.dspace.{identifier}.{today}.tar"
+        self.push = push
+        self.tarfile_name = f"cin.dspace.{self.identifier}.{today}.tar"
+        self.tarfile_path = f"{self.working_directory}/{self.tarfile_name}"
+
+        logging.basicConfig(
+            filename=f"./cin.dspace.{self.identifier}.{today}.{timestamp}.log",
+            level=logging.INFO,
+        )
 
     def run(self):
+        chdir(self.working_directory)
         self._unzip()
         self._bag()
         self._tar()
         self._push()
-
-        if self.clean:
-            rmtree(identifier)
+        self._clean()
 
     def _unzip(self):
         unzip.Unzip(self.identifier).unzip()
@@ -43,4 +53,9 @@ class Drc:
         tar.Tar(self.identifier, self.tarfile_name).tar()
 
     def _push(self):
-        push.Push(self.tarfile_name, self.production).push()
+        if self.push:
+            push.Push(self.tarfile_name, self.production).push()
+
+    def _clean(self):
+        if self.clean:
+            remove(self.tarfile_path)

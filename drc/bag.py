@@ -1,5 +1,6 @@
 from bagit import make_bag
 from lxml import etree
+import logging
 
 
 class Bag:
@@ -18,11 +19,13 @@ class Bag:
 
     def bag(self):
         ## parse description from parent object
+        logging.info("Parsing bag description")
         xslt = etree.parse("drc/xsl/bagInfo.xsl")
         doc = etree.parse(f"{self.target_directory}/{self.identifier}/mets.xml")
         transform = etree.XSLT(xslt)
         self.bag_info["Internal-Sender-Description"] = transform(doc)
 
+        logging.info("Making bag")
         make_bag(
             self.target_directory,
             bag_info=self.bag_info,
@@ -31,6 +34,7 @@ class Bag:
         )
 
         ## add aptrust-info.txt
+        logging.info("Parsing aptrust-info.txt")
         xslt = etree.parse("drc/xsl/aptrustInfo.xsl")
         doc = etree.parse(f"{self.target_directory}/data/{self.identifier}/mets.xml")
         transform = etree.XSLT(xslt)
