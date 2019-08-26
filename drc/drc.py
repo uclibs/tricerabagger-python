@@ -18,19 +18,23 @@ class Drc:
 
     """
 
-    def __init__(self, path, clean=False, production=False, push=True):
+    def __init__(self, path, production=False, unzip=True, push=True, clean=False):
         today = str(date.today())
         timestamp = int(time())
 
-        self.working_directory = dirname(path.rstrip("/"))
-        self.identifier = path.rstrip("/").split("/")[-1]
-        self.clean = clean
         self.production = production
         self.push = push
+        self.unzip = unzip
+        self.clean = clean
+
+        self.working_directory = dirname(path.rstrip("/"))
+        self.identifier = path.rstrip("/").split("/")[-1]
         self.tarfile_name = f"cin.dspace.{self.identifier}.{today}.tar"
         self.tarfile_path = f"{self.working_directory}/{self.tarfile_name}"
 
         logging.basicConfig(
+            format="%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
             filename=f"./cin.dspace.{self.identifier}.{today}.{timestamp}.log",
             level=logging.INFO,
         )
@@ -44,7 +48,10 @@ class Drc:
         self._clean()
 
     def _unzip(self):
-        unzip.Unzip(self.identifier).unzip()
+        if self.unzip:
+            unzip.Unzip(self.identifier).unzip()
+        else:
+            logging.info("Skipping unzip")
 
     def _bag(self):
         bag.Bag(self.identifier).bag()
@@ -55,7 +62,10 @@ class Drc:
     def _push(self):
         if self.push:
             push.Push(self.tarfile_name, self.production).push()
+        else:
+            logging.info("Skipping push")
 
     def _clean(self):
         if self.clean:
+            logging.info(f"Deleting {self.tarfile_path}")
             remove(self.tarfile_path)
