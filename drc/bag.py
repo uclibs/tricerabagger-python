@@ -6,8 +6,9 @@ import logging
 class Bag:
     """build a bag from the target directory"""
 
-    def __init__(self, directory):
+    def __init__(self, directory, config_paths):
         self.target_directory = directory
+        self.config_paths = config_paths
         self.identifier = self.target_directory.split("/")[-1]
         self.processors = 4
         self.checksums = ["md5"]
@@ -20,7 +21,7 @@ class Bag:
     def bag(self):
         ## parse description from parent object
         logging.info("Parsing bag description")
-        xslt = etree.parse("drc/xsl/bagInfo.xsl")
+        xslt = etree.parse(self.config_paths["baginfo"])
         doc = etree.parse(f"{self.target_directory}/{self.identifier}/mets.xml")
         transform = etree.XSLT(xslt)
         self.bag_info["Internal-Sender-Description"] = transform(doc)
@@ -35,7 +36,7 @@ class Bag:
 
         ## add aptrust-info.txt
         logging.info("Parsing aptrust-info.txt")
-        xslt = etree.parse("drc/xsl/aptrustInfo.xsl")
+        xslt = etree.parse(self.config_paths["aptrustinfo"])
         doc = etree.parse(f"{self.target_directory}/data/{self.identifier}/mets.xml")
         transform = etree.XSLT(xslt)
         with open(f"{self.target_directory}/aptrust-info.txt", "w") as f:

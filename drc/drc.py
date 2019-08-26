@@ -1,7 +1,7 @@
 from drc import unzip, bag, tar, push
 from datetime import date
 from os.path import dirname
-from os import chdir, remove
+from os import chdir, remove, getcwd
 from time import time
 import logging
 
@@ -27,6 +27,11 @@ class Drc:
         self.unzip = unzip
         self.clean = clean
 
+        cwd = getcwd()
+        self.config_paths = {
+            "baginfo": f"{cwd}/drc/xsl/bagInfo.xsl",
+            "aptrustinfo": f"{cwd}/drc/xsl/aptrustInfo.xsl",
+        }
         self.working_directory = dirname(path.rstrip("/"))
         self.identifier = path.rstrip("/").split("/")[-1]
         self.tarfile_name = f"cin.dspace.{self.identifier}.{today}.tar"
@@ -54,7 +59,7 @@ class Drc:
             logging.info("Skipping unzip")
 
     def _bag(self):
-        bag.Bag(self.identifier).bag()
+        bag.Bag(self.identifier, self.config_paths).bag()
 
     def _tar(self):
         tar.Tar(self.identifier, self.tarfile_name).tar()
